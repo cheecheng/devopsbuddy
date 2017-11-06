@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head th:fragment="common-header">
+    <title>DevOps Buddy</title>
+
+    <!-- Bootstrap core CSS -->
+    <!--<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet"/>-->
+    <!-- Thymeleaf Link URL Expressions: @{...} -->
+    <!-- Located in:
+    External Libraries > Maven: org.webjars:bootstrap:3.3.7 > bootstrap-3.3.7.jar >
+    META-INF/resources/webjars/bootstrap/3.3.7/css/bootstrap.css/bootstrap.min.css  -->
+    <!-- **** Make sure to ignore "bootstrap.css" or it will NOT work -->
+    <link th:href="@{/webjars/bootstrap/3.3.7/css/bootstrap.min.css}" rel="stylesheet" media="screen" />
+
+    <!-- Custom styles for this template -->
+    <link type="text/css" th:href="@{/css/styles.css}" rel="stylesheet" media="screen" />
+</head>
+
+<div th:fragment="before-body-scripts">
+    <!--<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>-->
+    <!--<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>-->
+    <!-- Located in:
+        External Libraries > Maven: org.webjars:jquery:3.2.1 > jquery-3.2.1.jar >
+        META-INF/resources/webjars/jquery/3.2.1/jquery.js/jquery.min.js  -->
+    <!-- **** Make sure to ignore "jquery.js" or it will NOT work -->
+    <script th:src="@{/webjars/jquery/3.2.1/jquery.min.js}" ></script>
+    <!-- Located in:
+        External Libraries > Maven: org.webjars:bootstrap:3.3.7 > bootstrap-3.3.7.jar >
+        META-INF/resources/webjars/bootstrap/3.3.7/js/bootstrap.js/bootstrap.min.js  -->
+    <!-- **** Make sure to ignore "bootstrap.js" or it will NOT work -->
+    <script th:src="@{/webjars/bootstrap/3.3.7/js/bootstrap.min.js}" ></script>
+</div>
+</html>
