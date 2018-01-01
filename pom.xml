@@ -42,6 +42,16 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-security</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa</artifactId>
+		</dependency>
+        <!-- Need Spring Boot's developer tools to use H2’s web console -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+            <optional>true</optional>
+        </dependency>
 
         <!-- Webjars for jquery and bootstrap -->
         <!-- https://mvnrepository.com/artifact/org.webjars/bootstrap -->
@@ -58,6 +68,7 @@
 			<version>3.2.1</version>
 		</dependency>
 
+        <!-- Spring Security -->
 		<!-- https://mvnrepository.com/artifact/org.thymeleaf.extras/thymeleaf-extras-springsecurity4 -->
 		<dependency>
 			<groupId>org.thymeleaf.extras</groupId>
@@ -68,7 +79,17 @@
         There was an unexpected error (type=Internal Server Error, status=500).
         Exception evaluating SpringEL expression: "#authorization.expression('!isAuthenticated()')" (common/navbar:25)-->
 
-		<dependency>
+        <!-- Spring Data -->
+        <!-- https://mvnrepository.com/artifact/com.h2database/h2 -->
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+        </dependency>
+        <!-- No need to specify version, by importing <artifactId>spring-boot-starter-data-jpa</artifactId>,
+        Spring Boot manage the version for us. Can be seen by putting pointer to the "D with up arrow" icon
+        next to this dependency. -->
+
+        <dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>

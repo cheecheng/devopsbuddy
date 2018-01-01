@@ -9,8 +9,8 @@ public abstract class AbstractEmailService implements EmailService {
     @Value("${default.to.address}")
     private String defaultToAddress;
 
-    @Value("${spring.mail.username}")
-    private String fromAddress;
+    //@Value("${spring.mail.username}")
+    //private String fromAddress;
 
     /**
      * Create a Simple Mail Message from a feedback POJO.
@@ -21,7 +21,8 @@ public abstract class AbstractEmailService implements EmailService {
     protected SimpleMailMessage prepareSimpleMailMessageFromFeedbackPojo(FeedbackPojo feedback) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(defaultToAddress);
-        message.setFrom(fromAddress);
+        //message.setFrom(fromAddress);
+        message.setFrom(feedback.getEmail());
         message.setReplyTo(feedback.getEmail());
         message.setSubject("[DevOps Buddy]: Feedback received from " + feedback.getFirstName() + " " +
                 feedback.getLastName() + "!");

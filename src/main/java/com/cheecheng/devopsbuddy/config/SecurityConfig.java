@@ -20,6 +20,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             "/about/**",
             "/contact/**",
             "/error/**/*",
+            "/h2-console/**",
+            // By default the console will be available at /h2-console.
+            // You can customize the console’s path using the spring.h2.console.path property.
     };
 
     @Override
@@ -33,6 +36,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .failureUrl("/login?error").permitAll()
                 .and()
                 .logout().permitAll();
+
+        // Need to disable CSRF support to access H2 web console or will get error:
+        // Invalid CSRF Token 'null' was found on the request parameter '_csrf' or header 'X-CSRF-TOKEN'.
+        http.csrf().disable();
+        // Need to disable X-Frame-Options, i.e. not to include X-Frame-Options header
+        // or will get blank page.
+        http.headers().frameOptions().disable();
     }
 
     @Autowired
