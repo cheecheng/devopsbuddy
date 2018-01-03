@@ -2,14 +2,20 @@ package com.cheecheng.devopsbuddy.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 
+import java.util.Arrays;
+import java.util.List;
+
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
+
+    private Environment env;
 
     private static final String[] PUBLIC_MATCHES = {
             "/webjars/**",
@@ -25,8 +31,28 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             // You can customize the console’s path using the spring.h2.console.path property.
     };
 
+    /**
+     * Creates an instance with the default configuration enabled.
+     */
+    @Autowired
+    public SecurityConfig(Environment env) {
+        this.env = env;
+    }
+
     @Override
     protected void configure(HttpSecurity http) throws Exception {
+
+        List<String> activeProfiles = Arrays.asList(env.getActiveProfiles());
+        if (activeProfiles.contains("dev")) {
+            // Need to disable CSRF support to access H2 web console or will get error:
+            // Invalid CSRF Token 'null' was found on the request parameter '_csrf' or header 'X-CSRF-TOKEN'.
+            http.csrf().disable();
+            // Need to disable X-Frame-Options, i.e. not to include X-Frame-Options header
+            // or will get blank page.
+            http.headers().frameOptions().disable();
+            // either the above or below works
+            //http.headers().frameOptions().sameOrigin();
+        }
 
         http.authorizeRequests()
                 .antMatchers(PUBLIC_MATCHES).permitAll()
@@ -36,13 +62,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .failureUrl("/login?error").permitAll()
                 .and()
                 .logout().permitAll();
-
-        // Need to disable CSRF support to access H2 web console or will get error:
-        // Invalid CSRF Token 'null' was found on the request parameter '_csrf' or header 'X-CSRF-TOKEN'.
-        http.csrf().disable();
-        // Need to disable X-Frame-Options, i.e. not to include X-Frame-Options header
-        // or will get blank page.
-        http.headers().frameOptions().disable();
     }
 
     @Autowired

@@ -30,6 +30,19 @@ import java.util.Set;
  *
  * and let Hibernate generates the intermediary table.
  *
+ * ** BUT **
+ * According to high-performance-java-persistence.pdf, p. 219,
+ * The most efficient JPA relationships are the ones where the foreign key side is controlled by a
+ * child-side @ManyToOne or @OneToOne association. For this reason, the many-to-many table relationship is
+ * best mapped with two bidirectional @OneToMany associations. The entity removal and the element order changes are
+ * more efficient than the default @ManyToMany relationship and the junction entity can also map additional columns
+ * (e.g. created_on, created_by).
+ *
+ * So, it's better to manually create the intermediary table entity, like the video.
+ * See the following for more information,
+ * high-performance-java-persistence.pdf,
+ * p. 213, 10.5.2 Bidirectional @ManyToMany
+ * p. 215, 10.5.3 The @OneToMany alternative
  */
 @Entity
 public class Role {

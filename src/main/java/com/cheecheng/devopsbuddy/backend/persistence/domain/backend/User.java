@@ -30,6 +30,19 @@ import java.util.Set;
  *
  * and let Hibernate generates the intermediary table.
  *
+ * ** BUT **
+ * According to high-performance-java-persistence.pdf, p. 219,
+ * The most efficient JPA relationships are the ones where the foreign key side is controlled by a
+ * child-side @ManyToOne or @OneToOne association. For this reason, the many-to-many table relationship is
+ * best mapped with two bidirectional @OneToMany associations. The entity removal and the element order changes are
+ * more efficient than the default @ManyToMany relationship and the junction entity can also map additional columns
+ * (e.g. created_on, created_by).
+ *
+ * So, it's better to manually create the intermediary table entity, like the video.
+ * See the following for more information,
+ * high-performance-java-persistence.pdf,
+ * p. 213, 10.5.2 Bidirectional @ManyToMany
+ * p. 215, 10.5.3 The @OneToMany alternative
  */
 @Entity
 public class User {
@@ -83,8 +96,17 @@ public class User {
     // CAUTION: DO NOT USE CascadeType.ALL because the CascadeType.REMOVE
     // might end-up deleting more than we’re expecting
     // See https://vladmihalcea.com/2015/03/05/a-beginners-guide-to-jpa-and-hibernate-cascade-types/
-    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE},
+                fetch = FetchType.EAGER)
     private Set<Role> roles = new HashSet<>();
+
+    /*
+    Need "fetch = FetchType.EAGER", or integration test will fail with following exception,
+    org.hibernate.LazyInitializationException: failed to lazily initialize a collection of role:
+    com.cheecheng.devopsbuddy.backend.persistence.domain.backend.User.roles, could not initialize proxy - no Session
+
+	at com.cheecheng.devopsbuddy.test.integration.RepositoriesIntegrationTest.testCreateNewUser(RepositoriesIntegrationTest.java:87)
+     */
 
     public void addRole(Role role) {
         roles.add(role);
@@ -94,6 +116,10 @@ public class User {
     public void removeRole(Role role) {
         roles.remove(role);
         role.getUsers().remove(this);
+    }
+
+    public Set<Role> getRoles() {
+        return roles;
     }
 
     public long getId() {
