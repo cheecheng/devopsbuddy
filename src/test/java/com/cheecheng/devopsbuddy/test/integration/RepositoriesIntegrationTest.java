@@ -7,16 +7,17 @@ import com.cheecheng.devopsbuddy.backend.persistence.domain.backend.User;
 import com.cheecheng.devopsbuddy.backend.persistence.repositories.PlanRepository;
 import com.cheecheng.devopsbuddy.backend.persistence.repositories.RoleRepository;
 import com.cheecheng.devopsbuddy.backend.persistence.repositories.UserRepository;
+import com.cheecheng.devopsbuddy.enums.PlansEnum;
+import com.cheecheng.devopsbuddy.enums.RolesEnum;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.util.Collection;
 import java.util.Set;
 
 @RunWith(SpringRunner.class)
@@ -32,9 +33,6 @@ public class RepositoriesIntegrationTest {
     @Autowired
     private UserRepository userRepository;
 
-    private static final int BASIC_PLAN_ID = 1;
-    private static final int BASIC_ROLE_ID = 1;
-
     @Before
     public void init() {
         Assert.assertNotNull(planRepository);
@@ -44,19 +42,19 @@ public class RepositoriesIntegrationTest {
 
     @Test
     public void testCreateNewPlan() {
-        Plan basicPlan = createBasicPlan();
+        Plan basicPlan = createPlan(PlansEnum.BASIC);
         planRepository.save(basicPlan);
 
-        Plan retrievedPlan = planRepository.findOne(BASIC_PLAN_ID);
+        Plan retrievedPlan = planRepository.findOne(PlansEnum.BASIC.getId());
         Assert.assertNotNull(retrievedPlan);
     }
 
     @Test
     public void testCreateNewRole() {
-        Role userRole = createBasicRole();
+        Role userRole = createRole(RolesEnum.BASIC);
         roleRepository.save(userRole);
 
-        Role retrievedRole = roleRepository.findOne(BASIC_ROLE_ID);
+        Role retrievedRole = roleRepository.findOne(RolesEnum.BASIC.getId());
         Assert.assertNotNull(retrievedRole);
     }
 
@@ -64,14 +62,14 @@ public class RepositoriesIntegrationTest {
     public void testCreateNewUser() {
 
         // Create a save a Plan record
-        Plan basicPlan = createBasicPlan();
+        Plan basicPlan = createPlan(PlansEnum.BASIC);
         planRepository.save(basicPlan);
 
         // Create User instance and set the Plan saved entity as Foreign Key
         User basicUser = createBasicUser();
         basicUser.setPlan(basicPlan);
 
-        Role basicRole = createBasicRole();
+        Role basicRole = createRole(RolesEnum.BASIC);
         basicUser.addRole(basicRole);
 
         basicUser = userRepository.save(basicUser);
@@ -90,18 +88,53 @@ public class RepositoriesIntegrationTest {
         }
     }
 
-    private Plan createBasicPlan() {
-        Plan plan = new Plan();
-        plan.setId(BASIC_PLAN_ID);
-        plan.setName("Basic");
-        return plan;
+    /*
+    Need @After tearDown() method to clean the database after EACH test, or will get the error below
+    because of existing data in the database.
+
+    14712 [main] WARN  o.h.e.jdbc.spi.SqlExceptionHelper - SQL Error: 23505, SQLState: 23505
+    14715 [main] ERROR o.h.e.jdbc.spi.SqlExceptionHelper - Unique index or primary key violation:
+    "PRIMARY KEY ON PUBLIC.ROLE(ID)"; SQL statement: insert into role (name, id) values (?, ?) [23505-196]
+
+    org.springframework.dao.DataIntegrityViolationException: could not execute statement; SQL [n/a];
+    constraint ["PRIMARY KEY ON PUBLIC.ROLE(ID)"; SQL statement: insert into role (name, id) values (?, ?) [23505-196]];
+    nested exception is org.hibernate.exception.ConstraintViolationException: could not execute statement
+
+    at com.cheecheng.devopsbuddy.test.integration.RepositoriesIntegrationTest.testCreateNewUser(RepositoriesIntegrationTest.java:78)
+
+	Caused by: org.h2.jdbc.JdbcSQLException: Unique index or primary key violation: "PRIMARY KEY ON PUBLIC.ROLE(ID)";
+	SQL statement: insert into role (name, id) values (?, ?) [23505-196]
+     */
+
+    @After
+    public void tearDown() throws Exception {
+        /*
+        Need to delete users first, or will get the following error:
+        17676 [main] ERROR o.h.e.jdbc.spi.SqlExceptionHelper - Referential integrity constraint violation:
+        "FKEOS0C7NC1MVICJCXBKXXOLOHC: PUBLIC.USER FOREIGN KEY(PLAN_ID) REFERENCES PUBLIC.PLAN(ID) (1)";
+        SQL statement: delete from plan where id=? [23503-196]
+
+        org.springframework.dao.DataIntegrityViolationException: could not execute statement; SQL [n/a];
+        constraint ["FKEOS0C7NC1MVICJCXBKXXOLOHC: PUBLIC.USER FOREIGN KEY(PLAN_ID) REFERENCES PUBLIC.PLAN(ID) (1)";
+        SQL statement: delete from plan where id=? [23503-196]];
+        nested exception is org.hibernate.exception.ConstraintViolationException: could not execute statement
+        at com.cheecheng.devopsbuddy.test.integration.RepositoriesIntegrationTest.tearDown(RepositoriesIntegrationTest.java:97)
+
+	    Caused by: org.h2.jdbc.JdbcSQLException: Referential integrity constraint violation:
+	    "FKEOS0C7NC1MVICJCXBKXXOLOHC: PUBLIC.USER FOREIGN KEY(PLAN_ID) REFERENCES PUBLIC.PLAN(ID) (1)";
+	    SQL statement: delete from plan where id=? [23503-196]
+         */
+        userRepository.deleteAll();
+        planRepository.deleteAll();
+        roleRepository.deleteAll();
     }
 
-    private Role createBasicRole() {
-        Role role = new Role();
-        role.setId(BASIC_ROLE_ID);
-        role.setName("ROLE_USER");
-        return role;
+    private Plan createPlan(PlansEnum plansEnum) {
+        return new Plan(plansEnum);
+    }
+
+    private Role createRole(RolesEnum rolesEnum) {
+        return new Role(rolesEnum);
     }
 
     private User createBasicUser() {

@@ -1,6 +1,9 @@
 package com.cheecheng.devopsbuddy.backend.persistence.domain.backend;
 
+import com.cheecheng.devopsbuddy.enums.RolesEnum;
+
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 import java.util.HashSet;
@@ -47,8 +50,6 @@ import java.util.Set;
 @Entity
 public class Role {
 
-    // Don't forget no-arg constructor
-
     @Id
     private int id;
 
@@ -57,6 +58,19 @@ public class Role {
     /* Role is owned by User */
     @ManyToMany(mappedBy = "roles")
     private Set<User> users = new HashSet<>();
+
+    public Role() {
+    }
+
+    /**
+     * Full constructor.
+     *
+     * @param rolesEnum
+     */
+    public Role(RolesEnum rolesEnum) {
+        this.id = rolesEnum.getId();
+        this.name = rolesEnum.getRoleName();
+    }
 
     public Set<User> getUsers() {
         return users;

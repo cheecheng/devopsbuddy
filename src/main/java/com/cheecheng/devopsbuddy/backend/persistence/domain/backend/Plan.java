@@ -1,5 +1,7 @@
 package com.cheecheng.devopsbuddy.backend.persistence.domain.backend;
 
+import com.cheecheng.devopsbuddy.enums.PlansEnum;
+
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import java.util.Objects;
@@ -12,7 +14,14 @@ public class Plan {
 
     private String name;
 
-    /* remember to create no-arg constructor */
+    public Plan() {
+
+    }
+
+    public Plan(PlansEnum plansEnum) {
+        this.id = plansEnum.getId();
+        this.name = plansEnum.getPlanName();
+    }
 
     public int getId() {
         return id;
