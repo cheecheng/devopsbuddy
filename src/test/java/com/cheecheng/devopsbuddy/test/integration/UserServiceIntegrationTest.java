@@ -6,7 +6,7 @@ import com.cheecheng.devopsbuddy.backend.persistence.domain.backend.User;
 import com.cheecheng.devopsbuddy.backend.service.UserService;
 import com.cheecheng.devopsbuddy.enums.PlansEnum;
 import com.cheecheng.devopsbuddy.enums.RolesEnum;
-import com.cheecheng.devopsbuddy.utils.UsersUtils;
+import com.cheecheng.devopsbuddy.utils.UserUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -27,7 +27,7 @@ public class UserServiceIntegrationTest {
     @Test
     public void testCreateNewUser() {
 
-        User basicUser = UsersUtils.createBasicUser();
+        User basicUser = UserUtils.createBasicUser();
         Set<Role> roles = new HashSet<>();
         roles.add(new Role(RolesEnum.BASIC));
 

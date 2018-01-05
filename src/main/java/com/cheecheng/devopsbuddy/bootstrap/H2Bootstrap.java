@@ -5,15 +5,21 @@ import com.cheecheng.devopsbuddy.backend.persistence.domain.backend.User;
 import com.cheecheng.devopsbuddy.backend.service.UserService;
 import com.cheecheng.devopsbuddy.enums.PlansEnum;
 import com.cheecheng.devopsbuddy.enums.RolesEnum;
-import com.cheecheng.devopsbuddy.utils.UsersUtils;
+import com.cheecheng.devopsbuddy.utils.UserUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Make sure this class is annotated with @Component,
+ * or it'll not be registered as bean, and run() will not be called.
+ */
+@Component
 public class H2Bootstrap implements CommandLineRunner {
 
     /** The application logger */
@@ -34,7 +40,7 @@ public class H2Bootstrap implements CommandLineRunner {
      */
     @Override
     public void run(String... args) throws Exception {
-        User user = UsersUtils.createBasicUser();
+        User user = UserUtils.createBasicUser();
         Set<Role> roles = new HashSet<>();
         roles.add(new Role(RolesEnum.BASIC));
         log.debug("Creating user with username {}", user.getUsername());

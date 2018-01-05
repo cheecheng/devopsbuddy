@@ -9,6 +9,7 @@ import com.cheecheng.devopsbuddy.backend.persistence.repositories.RoleRepository
 import com.cheecheng.devopsbuddy.backend.persistence.repositories.UserRepository;
 import com.cheecheng.devopsbuddy.enums.PlansEnum;
 import com.cheecheng.devopsbuddy.enums.RolesEnum;
+import com.cheecheng.devopsbuddy.utils.UserUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -18,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.util.HashSet;
 import java.util.Set;
 
 @RunWith(SpringRunner.class)
@@ -61,18 +63,8 @@ public class RepositoriesIntegrationTest {
     @Test
     public void testCreateNewUser() {
 
-        // Create a save a Plan record
-        Plan basicPlan = createPlan(PlansEnum.BASIC);
-        planRepository.save(basicPlan);
+        User basicUser = createUser();
 
-        // Create User instance and set the Plan saved entity as Foreign Key
-        User basicUser = createBasicUser();
-        basicUser.setPlan(basicPlan);
-
-        Role basicRole = createRole(RolesEnum.BASIC);
-        basicUser.addRole(basicRole);
-
-        basicUser = userRepository.save(basicUser);
         User newlyCreatedUser = userRepository.findOne(basicUser.getId());
 
         // If all relationships contain data after running the findOne() method,
@@ -106,6 +98,12 @@ public class RepositoriesIntegrationTest {
 	SQL statement: insert into role (name, id) values (?, ?) [23505-196]
      */
 
+    @Test
+    public void testDeleteUser() {
+        User basicUser = createUser();
+        userRepository.delete(basicUser.getId());
+    }
+
     @After
     public void tearDown() throws Exception {
         /*
@@ -137,20 +135,30 @@ public class RepositoriesIntegrationTest {
         return new Role(rolesEnum);
     }
 
-    private User createBasicUser() {
-        User user = new User();
-        user.setUsername("basicUser");
-        user.setPassword("secret");
-        user.setEmail("me@example.com");
-        user.setFirstName("firstName");
-        user.setLastName("lastName");
-        user.setPhoneNumber("123456789123");
-        user.setCountry("GB");
-        user.setEnabled(true);
-        user.setDescription("A basic user");
-        user.setProfileImageUrl("https://blabla.images.com/basicuser");
+    private User createUser() {
+        Plan basicPlan = createPlan(PlansEnum.BASIC);
+        planRepository.save(basicPlan);
 
-        return user;
+        User basicUser = UserUtils.createBasicUser();
+        basicUser.setPlan(basicPlan);
+
+        Role basicRole = createRole(RolesEnum.BASIC);
+        //roleRepository.save(basicRole);
+        // DO NOT CALL roleRepository.save(basicRole);
+        // Will receive error:
+        // org.springframework.dao.DataIntegrityViolationException: could not execute statement; SQL [n/a];
+        // constraint ["PRIMARY KEY ON PUBLIC.ROLE(ID)"; SQL statement:
+        // insert into role (name, id) values (?, ?) [23505-196]];
+        // nested exception is org.hibernate.exception.ConstraintViolationException: could not execute statement
+        // Caused by: org.h2.jdbc.JdbcSQLException: Unique index or primary key violation: "PRIMARY KEY ON PUBLIC.ROLE(ID)";
+        // SQL statement: insert into role (name, id) values (?, ?) [23505-196]
+        // **** Because roleRepository.save(basicRole) will be called by userRepository.save(basicUser); ****
+
+        basicUser.addRole(basicRole);
+
+        basicUser = userRepository.save(basicUser);
+
+        return basicUser;
     }
 }
 

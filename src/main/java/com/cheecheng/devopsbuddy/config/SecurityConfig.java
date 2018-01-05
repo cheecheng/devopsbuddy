@@ -1,5 +1,6 @@
 package com.cheecheng.devopsbuddy.config;
 
+import com.cheecheng.devopsbuddy.backend.service.UserSecurityService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
@@ -16,6 +17,8 @@ import java.util.List;
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private Environment env;
+
+    private UserSecurityService userSecurityService;
 
     private static final String[] PUBLIC_MATCHES = {
             "/webjars/**",
@@ -35,8 +38,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
      * Creates an instance with the default configuration enabled.
      */
     @Autowired
-    public SecurityConfig(Environment env) {
+    public SecurityConfig(Environment env, UserSecurityService userSecurityService) {
         this.env = env;
+        this.userSecurityService = userSecurityService;
     }
 
     @Override
@@ -64,10 +68,17 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .logout().permitAll();
     }
 
+
+    /**
+     * See https://spring.io/blog/2013/07/03/spring-security-java-config-preview-web-security
+     * Autowired annotation is to inject AuthenticationManagerBuilder.
+     *
+     * @param auth
+     * @throws Exception
+     */
     @Autowired
-    public void  configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-        auth.inMemoryAuthentication()
-                .withUser("user").password("password")
-                .roles("USER");
+    public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
+        //auth.inMemoryAuthentication().withUser("user").password("password").roles("USER");
+        auth.userDetailsService(userSecurityService);
     }
 }
