@@ -2,13 +2,16 @@ package com.cheecheng.devopsbuddy.config;
 
 import com.cheecheng.devopsbuddy.backend.service.UserSecurityService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
+import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.List;
 
@@ -20,6 +23,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private UserSecurityService userSecurityService;
 
+    // Encryption salt is random value. Once it's created, never change it.
+    // Never share with others.
+    private static final String SALT = "This!Is@A#Random$Salt%123";
+
+    /** Public URLs */
     private static final String[] PUBLIC_MATCHES = {
             "/webjars/**",
             "/css/**",
@@ -41,6 +49,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     public SecurityConfig(Environment env, UserSecurityService userSecurityService) {
         this.env = env;
         this.userSecurityService = userSecurityService;
+    }
+
+    @Bean
+    public BCryptPasswordEncoder passwordEncoder() {
+        // if strength is too big, the application will take too long to start.
+        return new BCryptPasswordEncoder(12, new SecureRandom(SALT.getBytes()));
     }
 
     @Override
@@ -79,6 +93,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
         //auth.inMemoryAuthentication().withUser("user").password("password").roles("USER");
-        auth.userDetailsService(userSecurityService);
+        auth.userDetailsService(userSecurityService).passwordEncoder(passwordEncoder());
     }
 }

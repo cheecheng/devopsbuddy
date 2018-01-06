@@ -8,6 +8,7 @@ import com.cheecheng.devopsbuddy.backend.persistence.repositories.RoleRepository
 import com.cheecheng.devopsbuddy.backend.persistence.repositories.UserRepository;
 import com.cheecheng.devopsbuddy.enums.PlansEnum;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,17 +21,23 @@ public class UserServiceImpl implements UserService {
     private RoleRepository roleRepository;
     private PlanRepository planRepository;
     private UserRepository userRepository;
+    private BCryptPasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserServiceImpl(RoleRepository roleRepository, PlanRepository planRepository, UserRepository userRepository) {
+    public UserServiceImpl(RoleRepository roleRepository, PlanRepository planRepository, UserRepository userRepository,
+                           BCryptPasswordEncoder passwordEncoder) {
         this.roleRepository = roleRepository;
         this.planRepository = planRepository;
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Transactional  // specific transaction
     @Override
     public User createUser(User user, PlansEnum plansEnum, Set<Role> roles) {
+
+        String encryptedPassword = passwordEncoder.encode(user.getPassword());
+        user.setPassword(encryptedPassword);
 
         Plan plan = new Plan(plansEnum);
         if (!planRepository.exists(plansEnum.getId())) {
