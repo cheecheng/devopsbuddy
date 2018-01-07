@@ -14,13 +14,15 @@ public class UserUtils {
     /**
      * Create a user with basic attribute set.
      *
+     * @param username
+     * @param email
      * @return a User entity
      */
-    public static User createBasicUser() {
+    public static User createBasicUser(String username, String email) {
         User user = new User();
-        user.setUsername("basicUser");
+        user.setUsername(username);
         user.setPassword("secret");
-        user.setEmail("me@example.com");
+        user.setEmail(email);
         user.setFirstName("firstName");
         user.setLastName("lastName");
         user.setPhoneNumber("123456789123");

@@ -8,7 +8,9 @@ import com.cheecheng.devopsbuddy.enums.PlansEnum;
 import com.cheecheng.devopsbuddy.enums.RolesEnum;
 import com.cheecheng.devopsbuddy.utils.UserUtils;
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -24,10 +26,17 @@ public class UserServiceIntegrationTest {
     @Autowired
     private UserService userService;
 
+    @Rule
+    public TestName testName = new TestName();
+
     @Test
     public void testCreateNewUser() {
 
-        User basicUser = UserUtils.createBasicUser();
+        // Use test name as test username and email
+        String username = testName.getMethodName();
+        String email = testName.getMethodName() + "@devopsbuddy.com";
+
+        User basicUser = UserUtils.createBasicUser(username, email);
         Set<Role> roles = new HashSet<>();
         roles.add(new Role(RolesEnum.BASIC));
 
