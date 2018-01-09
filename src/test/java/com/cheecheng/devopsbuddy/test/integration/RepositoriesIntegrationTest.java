@@ -4,6 +4,7 @@ import com.cheecheng.devopsbuddy.DevopsbuddyApplication;
 import com.cheecheng.devopsbuddy.backend.persistence.domain.backend.Plan;
 import com.cheecheng.devopsbuddy.backend.persistence.domain.backend.Role;
 import com.cheecheng.devopsbuddy.backend.persistence.domain.backend.User;
+import com.cheecheng.devopsbuddy.backend.persistence.domain.backend.UserRole;
 import com.cheecheng.devopsbuddy.backend.persistence.repositories.PlanRepository;
 import com.cheecheng.devopsbuddy.backend.persistence.repositories.RoleRepository;
 import com.cheecheng.devopsbuddy.backend.persistence.repositories.UserRepository;
@@ -17,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.util.HashSet;
 import java.util.Set;
 
 @RunWith(SpringRunner.class)
@@ -78,10 +80,10 @@ public class RepositoriesIntegrationTest {
         Assert.assertTrue(newlyCreatedUser.getId() != 0);
         Assert.assertNotNull(newlyCreatedUser.getPlan());
         Assert.assertNotNull(newlyCreatedUser.getPlan().getId());
-        Set<Role> newlyCreatedUserRoles = newlyCreatedUser.getRoles();
-        for (Role role : newlyCreatedUserRoles) {
-            Assert.assertNotNull(role);
-            Assert.assertNotNull(role.getId());
+        Set<UserRole> newlyCreatedUserUserRoles = newlyCreatedUser.getUserRoles();
+        for (UserRole userRole : newlyCreatedUserUserRoles) {
+            Assert.assertNotNull(userRole.getRole());
+            Assert.assertNotNull(userRole.getRole().getId());
         }
     }
 
@@ -132,9 +134,9 @@ public class RepositoriesIntegrationTest {
 	    "FKEOS0C7NC1MVICJCXBKXXOLOHC: PUBLIC.USER FOREIGN KEY(PLAN_ID) REFERENCES PUBLIC.PLAN(ID) (1)";
 	    SQL statement: delete from plan where id=? [23503-196]
          */
-        userRepository.deleteAll();
-        planRepository.deleteAll();
-        roleRepository.deleteAll();
+        //userRepository.deleteAll();
+        //planRepository.deleteAll();
+        //roleRepository.deleteAll();
     }
 
     private Plan createPlan(PlansEnum plansEnum) {
@@ -153,6 +155,8 @@ public class RepositoriesIntegrationTest {
         basicUser.setPlan(basicPlan);
 
         Role basicRole = createRole(RolesEnum.BASIC);
+        roleRepository.save(basicRole);
+        // ????? comment still needed ????
         //roleRepository.save(basicRole);
         // DO NOT CALL roleRepository.save(basicRole);
         // Will receive error:
@@ -163,8 +167,12 @@ public class RepositoriesIntegrationTest {
         // Caused by: org.h2.jdbc.JdbcSQLException: Unique index or primary key violation: "PRIMARY KEY ON PUBLIC.ROLE(ID)";
         // SQL statement: insert into role (name, id) values (?, ?) [23505-196]
         // **** Because roleRepository.save(basicRole) will be called by userRepository.save(basicUser); ****
+        // ????? comment still needed ????
 
-        basicUser.addRole(basicRole);
+        Set<UserRole> userRoles = new HashSet<>();
+        UserRole userRole = new UserRole(basicUser, basicRole);
+        userRoles.add(userRole);
+        basicUser.getUserRoles().addAll(userRoles);
 
         basicUser = userRepository.save(basicUser);
 
@@ -173,6 +181,8 @@ public class RepositoriesIntegrationTest {
 }
 
 /*
+**** This is from the old way, page 64 of "Hibernate Tips - More than 70 solutions to common Hibernate problems.pdf" ****
+
 With User.java:
     @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE},
                 fetch = FetchType.EAGER)

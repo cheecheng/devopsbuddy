@@ -2,50 +2,11 @@ package com.cheecheng.devopsbuddy.backend.persistence.domain.backend;
 
 import com.cheecheng.devopsbuddy.enums.RolesEnum;
 
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.Id;
-import javax.persistence.ManyToMany;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import javax.persistence.*;
+import java.util.*;
 
 /**
- * This is difference from the video. In video, it creates the intermediary UserRole table, around time 10:15.
- *
- * @Entity
- * @Table(name = "user_role")
- * public class UserRole {
- *     @Id
- *     @ManyToOne(fetch = FetchType.EAGER)
- *     @JoinColumn(name = "user_id")
- *     private User user;
- *
- *     @Id
- *     @ManyToOne(fetch = FetchType.EAGER)
- *     @JoinColumn(name = "role_id")
- *     private Role role;
- * }
- *
- * But here I don't create this table, I follow
- * page 64 of "Hibernate Tips - More than 70 solutions to common Hibernate problems.pdf"
- * https://vladmihalcea.com/2017/05/10/the-best-way-to-use-the-manytomany-annotation-with-jpa-and-hibernate/
- *
- * and let Hibernate generates the intermediary table.
- *
- * ** BUT **
- * According to high-performance-java-persistence.pdf, p. 219,
- * The most efficient JPA relationships are the ones where the foreign key side is controlled by a
- * child-side @ManyToOne or @OneToOne association. For this reason, the many-to-many table relationship is
- * best mapped with two bidirectional @OneToMany associations. The entity removal and the element order changes are
- * more efficient than the default @ManyToMany relationship and the junction entity can also map additional columns
- * (e.g. created_on, created_by).
- *
- * So, it's better to manually create the intermediary table entity, like the video.
- * See the following for more information,
- * high-performance-java-persistence.pdf,
- * p. 213, 10.5.2 Bidirectional @ManyToMany
- * p. 215, 10.5.3 The @OneToMany alternative
+ * See comment on User.java
  */
 @Entity
 public class Role {
@@ -56,8 +17,17 @@ public class Role {
     private String name;
 
     /* Role is owned by User */
-    @ManyToMany(mappedBy = "roles")
-    private Set<User> users = new HashSet<>();
+    //@ManyToMany(mappedBy = "roles")
+    //private Set<User> users = new HashSet<>();
+
+    // high-performance-java-persistence.pdf, p. 219
+    //@OneToMany(mappedBy = "role", cascade = CascadeType.ALL, orphanRemoval = true)
+    //private Set<UserRole> users = new HashSet<>();
+
+    // high-performance-java-persistence.pdf, p. 219 doesn't work, follow what's on video.
+
+    @OneToMany(mappedBy = "role", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Set<UserRole> userRoles = new HashSet<>();
 
     public Role() {
     }
@@ -72,8 +42,12 @@ public class Role {
         this.name = rolesEnum.getRoleName();
     }
 
-    public Set<User> getUsers() {
-        return users;
+    public Set<UserRole> getUserRoles() {
+        return userRoles;
+    }
+
+    public void setUserRoles(Set<UserRole> userRoles) {
+        this.userRoles = userRoles;
     }
 
     public int getId() {

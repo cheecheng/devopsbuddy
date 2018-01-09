@@ -3,6 +3,7 @@ package com.cheecheng.devopsbuddy.test.integration;
 import com.cheecheng.devopsbuddy.DevopsbuddyApplication;
 import com.cheecheng.devopsbuddy.backend.persistence.domain.backend.Role;
 import com.cheecheng.devopsbuddy.backend.persistence.domain.backend.User;
+import com.cheecheng.devopsbuddy.backend.persistence.domain.backend.UserRole;
 import com.cheecheng.devopsbuddy.backend.service.UserService;
 import com.cheecheng.devopsbuddy.enums.PlansEnum;
 import com.cheecheng.devopsbuddy.enums.RolesEnum;
@@ -33,14 +34,14 @@ public class UserServiceIntegrationTest {
     public void testCreateNewUser() {
 
         // Use test name as test username and email
-        String username = testName.getMethodName();
-        String email = testName.getMethodName() + "@devopsbuddy.com";
+        String username = testName.getMethodName() + "1";
+        String email = testName.getMethodName() + "1@devopsbuddy.com";
 
+        Set<UserRole> userRoles = new HashSet<>();
         User basicUser = UserUtils.createBasicUser(username, email);
-        Set<Role> roles = new HashSet<>();
-        roles.add(new Role(RolesEnum.BASIC));
+        userRoles.add(new UserRole(basicUser, new Role(RolesEnum.BASIC)));
 
-        User user = userService.createUser(basicUser, PlansEnum.BASIC, roles);
+        User user = userService.createUser(basicUser, PlansEnum.BASIC, userRoles);
         Assert.assertNotNull(user);
         Assert.assertNotNull(user.getId());
     }

@@ -5,10 +5,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 /**
  * This is difference from the video. In video, it creates the intermediary UserRole table, around time 10:15.
@@ -46,11 +43,31 @@ import java.util.Set;
  * high-performance-java-persistence.pdf,
  * p. 213, 10.5.2 Bidirectional @ManyToMany
  * p. 215, 10.5.3 The @OneToMany alternative
+ *
+ * **** NOTE ****
+ * It turns out following page 64 of
+ * "Hibernate Tips - More than 70 solutions to common Hibernate problems.pdf"
+ * and https://vladmihalcea.com/2017/05/10/the-best-way-to-use-the-manytomany-annotation-with-jpa-and-hibernate/
+ * doesn't quite work, because when creating a new user,
+ * Hibernate tries to insert a role, even though the role already exist.
+ * Also when deleting a user, Hibernate tries to delete the role,
+ * even though other users use the same role.
+ * So, need to redo the entity mappings to follow high-performance-java-persistence.pdf, p. 219.
+ *
+ * **** NOTE ****
+ * Cannot get high-performance-java-persistence.pdf, p. 219 to work, keep getting error:
+ * org.springframework.orm.jpa.JpaSystemException: Could not set field value [1] value by reflection :
+ * [class com.cheecheng.devopsbuddy.backend.persistence.domain.backend.UserRoleId.roleId]
+ * setter of com.cheecheng.devopsbuddy.backend.persistence.domain.backend.UserRoleId.roleId;
+ *
+ * Follow what's shown in the video.
+ *
  */
 @Entity
-public class User implements UserDetails{
+public class User implements UserDetails {
 
-    // Don't forget no-arg constructor
+    public User() {
+    }
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -101,10 +118,9 @@ public class User implements UserDetails{
     // CAUTION: DO NOT USE CascadeType.ALL because the CascadeType.REMOVE
     // might end-up deleting more than we’re expecting
     // See https://vladmihalcea.com/2015/03/05/a-beginners-guide-to-jpa-and-hibernate-cascade-types/
-    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE},
-                fetch = FetchType.EAGER)
-    private Set<Role> roles = new HashSet<>();
-
+    //@ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE},
+    //            fetch = FetchType.EAGER)
+    //private Set<Role> roles = new HashSet<>();
     /*
     Need "fetch = FetchType.EAGER", or integration test will fail with following exception,
     org.hibernate.LazyInitializationException: failed to lazily initialize a collection of role:
@@ -113,18 +129,35 @@ public class User implements UserDetails{
 	at com.cheecheng.devopsbuddy.test.integration.RepositoriesIntegrationTest.testCreateNewUser(RepositoriesIntegrationTest.java:87)
      */
 
-    public void addRole(Role role) {
-        roles.add(role);
-        role.getUsers().add(this);
+    // high-performance-java-persistence.pdf, p. 219
+    //@OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    //private Set<UserRole> userRoles = new HashSet<>();
+
+    //public void removeRole(Role role) {
+
+    //    for (Iterator<UserRole> iterator = userRoles.iterator(); iterator.hasNext(); ) {
+    //        UserRole userRole = iterator.next();
+    //        if (userRole.getUser().equals(this) && userRole.getRole().equals(role)) {
+    //            iterator.remove();
+    //            userRole.getRole().getUsers().remove(userRole);
+    //            userRole.setUser(null);
+    //            userRole.setRole(null);
+    //            break;
+    //        }
+    //    }
+    //}
+
+    // high-performance-java-persistence.pdf, p. 219 doesn't work, follow what's on video.
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private Set<UserRole> userRoles = new HashSet<>();
+
+    public Set<UserRole> getUserRoles() {
+        return userRoles;
     }
 
-    public void removeRole(Role role) {
-        roles.remove(role);
-        role.getUsers().remove(this);
-    }
-
-    public Set<Role> getRoles() {
-        return roles;
+    public void setUserRoles(Set<UserRole> userRoles) {
+        this.userRoles = userRoles;
     }
 
     public long getId() {
@@ -186,7 +219,7 @@ public class User implements UserDetails{
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         Set<GrantedAuthority> authorities = new HashSet<>();
-        roles.forEach(r -> authorities.add(new Authority(r.getName())));
+        userRoles.forEach(userRole -> authorities.add(new Authority(userRole.getRole().getName())));
         return authorities;
     }
 

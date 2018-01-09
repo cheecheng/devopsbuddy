@@ -2,6 +2,7 @@ package com.cheecheng.devopsbuddy.bootstrap;
 
 import com.cheecheng.devopsbuddy.backend.persistence.domain.backend.Role;
 import com.cheecheng.devopsbuddy.backend.persistence.domain.backend.User;
+import com.cheecheng.devopsbuddy.backend.persistence.domain.backend.UserRole;
 import com.cheecheng.devopsbuddy.backend.service.UserService;
 import com.cheecheng.devopsbuddy.enums.PlansEnum;
 import com.cheecheng.devopsbuddy.enums.RolesEnum;
@@ -45,10 +46,10 @@ public class H2Bootstrap implements CommandLineRunner {
         String email = "proUser@devopsbuddy.com";
 
         User user = UserUtils.createBasicUser(username, email);
-        Set<Role> roles = new HashSet<>();
-        roles.add(new Role(RolesEnum.BASIC));
+        Set<UserRole> userRoles = new HashSet<>();
+        userRoles.add(new UserRole(user, new Role(RolesEnum.BASIC)));
         log.debug("Creating user with username {}", user.getUsername());
-        userService.createUser(user, PlansEnum.PRO, roles);
+        userService.createUser(user, PlansEnum.PRO, userRoles);
         log.debug("User {} created", user.getUsername());
     }
 }
