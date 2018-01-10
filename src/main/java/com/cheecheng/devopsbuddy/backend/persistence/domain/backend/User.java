@@ -160,6 +160,19 @@ public class User implements UserDetails {
         this.userRoles = userRoles;
     }
 
+    // CascadeType.ALL -> if we delete a user, all tokens for this user should be deleted too.
+    // FetchType.LAZY -> most of the time, no tokens for a user. Don't want additional join every time we query a user.
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private Set<PasswordResetToken> passwordResetTokens = new HashSet<>();
+
+    public Set<PasswordResetToken> getPasswordResetTokens() {
+        return passwordResetTokens;
+    }
+
+    public void setPasswordResetTokens(Set<PasswordResetToken> passwordResetTokens) {
+        this.passwordResetTokens = passwordResetTokens;
+    }
+
     public long getId() {
         return id;
     }

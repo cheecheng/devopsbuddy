@@ -23,16 +23,7 @@ import java.util.Set;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = DevopsbuddyApplication.class)
-public class RepositoriesIntegrationTest {
-
-    @Autowired
-    private PlanRepository planRepository;
-
-    @Autowired
-    private RoleRepository roleRepository;
-
-    @Autowired
-    private UserRepository userRepository;
+public class UserIntegrationTest extends AbstractIntegrationTest {
 
     @Rule
     public TestName testName = new TestName();
@@ -99,7 +90,7 @@ public class RepositoriesIntegrationTest {
     constraint ["PRIMARY KEY ON PUBLIC.ROLE(ID)"; SQL statement: insert into role (name, id) values (?, ?) [23505-196]];
     nested exception is org.hibernate.exception.ConstraintViolationException: could not execute statement
 
-    at com.cheecheng.devopsbuddy.test.integration.RepositoriesIntegrationTest.testCreateNewUser(RepositoriesIntegrationTest.java:78)
+    at com.cheecheng.devopsbuddy.test.integration.UserIntegrationTest.testCreateNewUser(UserIntegrationTest.java:78)
 
 	Caused by: org.h2.jdbc.JdbcSQLException: Unique index or primary key violation: "PRIMARY KEY ON PUBLIC.ROLE(ID)";
 	SQL statement: insert into role (name, id) values (?, ?) [23505-196]
@@ -128,7 +119,7 @@ public class RepositoriesIntegrationTest {
         constraint ["FKEOS0C7NC1MVICJCXBKXXOLOHC: PUBLIC.USER FOREIGN KEY(PLAN_ID) REFERENCES PUBLIC.PLAN(ID) (1)";
         SQL statement: delete from plan where id=? [23503-196]];
         nested exception is org.hibernate.exception.ConstraintViolationException: could not execute statement
-        at com.cheecheng.devopsbuddy.test.integration.RepositoriesIntegrationTest.tearDown(RepositoriesIntegrationTest.java:97)
+        at com.cheecheng.devopsbuddy.test.integration.UserIntegrationTest.tearDown(UserIntegrationTest.java:97)
 
 	    Caused by: org.h2.jdbc.JdbcSQLException: Referential integrity constraint violation:
 	    "FKEOS0C7NC1MVICJCXBKXXOLOHC: PUBLIC.USER FOREIGN KEY(PLAN_ID) REFERENCES PUBLIC.PLAN(ID) (1)";
@@ -137,46 +128,6 @@ public class RepositoriesIntegrationTest {
         //userRepository.deleteAll();
         //planRepository.deleteAll();
         //roleRepository.deleteAll();
-    }
-
-    private Plan createPlan(PlansEnum plansEnum) {
-        return new Plan(plansEnum);
-    }
-
-    private Role createRole(RolesEnum rolesEnum) {
-        return new Role(rolesEnum);
-    }
-
-    private User createUser(String username, String email) {
-        Plan basicPlan = createPlan(PlansEnum.BASIC);
-        planRepository.save(basicPlan);
-
-        User basicUser = UserUtils.createBasicUser(username, email);
-        basicUser.setPlan(basicPlan);
-
-        Role basicRole = createRole(RolesEnum.BASIC);
-        roleRepository.save(basicRole);
-        // ????? comment still needed ????
-        //roleRepository.save(basicRole);
-        // DO NOT CALL roleRepository.save(basicRole);
-        // Will receive error:
-        // org.springframework.dao.DataIntegrityViolationException: could not execute statement; SQL [n/a];
-        // constraint ["PRIMARY KEY ON PUBLIC.ROLE(ID)"; SQL statement:
-        // insert into role (name, id) values (?, ?) [23505-196]];
-        // nested exception is org.hibernate.exception.ConstraintViolationException: could not execute statement
-        // Caused by: org.h2.jdbc.JdbcSQLException: Unique index or primary key violation: "PRIMARY KEY ON PUBLIC.ROLE(ID)";
-        // SQL statement: insert into role (name, id) values (?, ?) [23505-196]
-        // **** Because roleRepository.save(basicRole) will be called by userRepository.save(basicUser); ****
-        // ????? comment still needed ????
-
-        Set<UserRole> userRoles = new HashSet<>();
-        UserRole userRole = new UserRole(basicUser, basicRole);
-        userRoles.add(userRole);
-        basicUser.getUserRoles().addAll(userRoles);
-
-        basicUser = userRepository.save(basicUser);
-
-        return basicUser;
     }
 }
 
@@ -259,7 +210,7 @@ org.hibernate.LazyInitializationException: failed to lazily initialize a collect
 	at org.hibernate.collection.internal.AbstractPersistentCollection.initialize(AbstractPersistentCollection.java:566)
 	at org.hibernate.collection.internal.AbstractPersistentCollection.read(AbstractPersistentCollection.java:135)
 	at org.hibernate.collection.internal.PersistentSet.iterator(PersistentSet.java:163)
-	at com.cheecheng.devopsbuddy.test.integration.RepositoriesIntegrationTest.testCreateNewUser(RepositoriesIntegrationTest.java:87)
+	at com.cheecheng.devopsbuddy.test.integration.UserIntegrationTest.testCreateNewUser(UserIntegrationTest.java:87)
 	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
 	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
 	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
