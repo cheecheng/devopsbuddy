@@ -10,4 +10,8 @@ import java.util.Set;
 public interface UserService {
 
     User createUser(User user, PlansEnum plansEnum, Set<UserRole> userRoles);
+
+    User findById(long userId);
+
+    void updateUserPassword(long userId, String password);
 }

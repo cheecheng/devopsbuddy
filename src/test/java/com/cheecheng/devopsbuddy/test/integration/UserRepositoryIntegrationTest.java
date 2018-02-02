@@ -20,10 +20,11 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = DevopsbuddyApplication.class)
-public class UserIntegrationTest extends AbstractIntegrationTest {
+public class UserRepositoryIntegrationTest extends AbstractIntegrationTest {
 
     @Rule
     public TestName testName = new TestName();
@@ -90,7 +91,7 @@ public class UserIntegrationTest extends AbstractIntegrationTest {
     constraint ["PRIMARY KEY ON PUBLIC.ROLE(ID)"; SQL statement: insert into role (name, id) values (?, ?) [23505-196]];
     nested exception is org.hibernate.exception.ConstraintViolationException: could not execute statement
 
-    at com.cheecheng.devopsbuddy.test.integration.UserIntegrationTest.testCreateNewUser(UserIntegrationTest.java:78)
+    at com.cheecheng.devopsbuddy.test.integration.UserRepositoryIntegrationTest.testCreateNewUser(UserRepositoryIntegrationTest.java:78)
 
 	Caused by: org.h2.jdbc.JdbcSQLException: Unique index or primary key violation: "PRIMARY KEY ON PUBLIC.ROLE(ID)";
 	SQL statement: insert into role (name, id) values (?, ?) [23505-196]
@@ -107,6 +108,29 @@ public class UserIntegrationTest extends AbstractIntegrationTest {
         userRepository.delete(basicUser.getId());
     }
 
+    @Test
+    public void testGetUserByEmail() {
+        User user = createUser(testName);
+
+        User newlyFoundUser = userRepository.findByEmail(user.getEmail());
+        Assert.assertNotNull(newlyFoundUser);
+        Assert.assertNotNull(newlyFoundUser.getId());
+    }
+
+    @Test
+    public void testUpdateUserPassword() {
+        User user = createUser(testName);
+        Assert.assertNotNull(user);
+        Assert.assertNotNull(user.getId());
+
+        String newPassword = UUID.randomUUID().toString();
+
+        userRepository.updateUserPassword(user.getId(), newPassword);
+
+        user = userRepository.findOne(user.getId());
+        Assert.assertEquals(newPassword, user.getPassword());
+    }
+
     @After
     public void tearDown() throws Exception {
         /*
@@ -119,7 +143,7 @@ public class UserIntegrationTest extends AbstractIntegrationTest {
         constraint ["FKEOS0C7NC1MVICJCXBKXXOLOHC: PUBLIC.USER FOREIGN KEY(PLAN_ID) REFERENCES PUBLIC.PLAN(ID) (1)";
         SQL statement: delete from plan where id=? [23503-196]];
         nested exception is org.hibernate.exception.ConstraintViolationException: could not execute statement
-        at com.cheecheng.devopsbuddy.test.integration.UserIntegrationTest.tearDown(UserIntegrationTest.java:97)
+        at com.cheecheng.devopsbuddy.test.integration.UserRepositoryIntegrationTest.tearDown(UserRepositoryIntegrationTest.java:97)
 
 	    Caused by: org.h2.jdbc.JdbcSQLException: Referential integrity constraint violation:
 	    "FKEOS0C7NC1MVICJCXBKXXOLOHC: PUBLIC.USER FOREIGN KEY(PLAN_ID) REFERENCES PUBLIC.PLAN(ID) (1)";
@@ -210,7 +234,7 @@ org.hibernate.LazyInitializationException: failed to lazily initialize a collect
 	at org.hibernate.collection.internal.AbstractPersistentCollection.initialize(AbstractPersistentCollection.java:566)
 	at org.hibernate.collection.internal.AbstractPersistentCollection.read(AbstractPersistentCollection.java:135)
 	at org.hibernate.collection.internal.PersistentSet.iterator(PersistentSet.java:163)
-	at com.cheecheng.devopsbuddy.test.integration.UserIntegrationTest.testCreateNewUser(UserIntegrationTest.java:87)
+	at com.cheecheng.devopsbuddy.test.integration.UserRepositoryIntegrationTest.testCreateNewUser(UserRepositoryIntegrationTest.java:87)
 	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
 	at sun.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:62)
 	at sun.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)

@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
 @SpringBootTest(classes = DevopsbuddyApplication.class)
 public class PasswordResetTokenIntegrationTest extends AbstractIntegrationTest {
 
-    @Value("${token.expiration.length.minute}")
+    @Value("${token.expiration.length.minutes}")
     private int expirationTimeInMinutes;
 
     @Autowired
