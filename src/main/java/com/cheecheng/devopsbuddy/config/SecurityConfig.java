@@ -1,6 +1,7 @@
 package com.cheecheng.devopsbuddy.config;
 
 import com.cheecheng.devopsbuddy.backend.service.UserSecurityService;
+import com.cheecheng.devopsbuddy.web.controllers.ForgotMyPasswordController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -40,6 +41,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             "/h2-console/**",
             // By default the console will be available at /h2-console.
             // You can customize the console’s path using the spring.h2.console.path property.
+            ForgotMyPasswordController.FORGOT_PASSWORD_URL_MAPPING
     };
 
     /**
