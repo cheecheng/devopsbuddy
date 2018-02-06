@@ -125,11 +125,15 @@ public class ForgotMyPasswordController {
      * @param model
      * @return
      */
-    @RequestMapping(value = CHANGE_PASSWORD_PATH, method = RequestMethod.GET)
+    // Can use either @GetMapping() or @RequestMapping()
+    //@RequestMapping(value = CHANGE_PASSWORD_PATH, method = RequestMethod.GET)
+    @GetMapping(CHANGE_PASSWORD_PATH)
     public String changeUserPasswordGet(@RequestParam("id") long id,
                                         @RequestParam("token") String token,
                                         Locale locale,
-                                        ModelMap model) {
+                                        //ModelMap model) {
+                                        Model model) {
+                                        // Can use either ModelMap or Model here
 
         if (StringUtils.isEmpty(token) || id == 0) {
             log.error("Invalid user id {} or token value {}", id, token);
@@ -173,10 +177,14 @@ public class ForgotMyPasswordController {
         return CHANGE_PASSWORD_VIEW_NAME;
     }
 
-    @RequestMapping(value = CHANGE_PASSWORD_PATH, method = RequestMethod.POST)
+    // Can use either @GetMapping() or @RequestMapping()
+    //@RequestMapping(value = CHANGE_PASSWORD_PATH, method = RequestMethod.POST)
+    @PostMapping(CHANGE_PASSWORD_PATH)
     public String changeUserPasswordPost(@RequestParam("principal_id") long userId, // come from hidden field in the form
                                          @RequestParam("password") String password,
-                                         ModelMap model) {
+                                         //ModelMap model) {
+                                         Model model) {
+                                         // Can use either ModelMap or Model here
 
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (null == authentication) {
